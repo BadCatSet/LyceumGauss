@@ -7,6 +7,8 @@ import pymunk.pygame_util
 pygame.init()
 
 RES = WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
+a = 50
+layers = 2
 
 
 def gen_balls(n: int, space: pymunk.Space):
@@ -23,12 +25,21 @@ def gen_balls(n: int, space: pymunk.Space):
 
         shape.elasticity = 0.9
 
-        shape.color = [randrange(256) for i in range(4)]
+        shape.color = [randrange(256) for _ in range(4)]
         space.add(body, shape)
 
 
-def gen_obstacles(space: pymunk.Space, a, layers):
-    pass
+def gen_obstacles(space: pymunk.Space):
+    dx, dy = WIDTH / 2, HEIGHT * 0.3
+    for layer in range(layers):
+        for pos in range(layer + 1):
+            body = pymunk.Body()
+            body.position = int(dx - a * layer / 2 + a * pos), \
+                            int(dy + a * layer)
+            shape = pymunk.Circle(body, 20, (0, 0))
+            shape.color = [randrange(256) for _ in range(4)]
+
+            space.add(shape, body)
 
 
 def gen_dividers(space: pymunk.Space):
@@ -36,8 +47,14 @@ def gen_dividers(space: pymunk.Space):
     space.add(segment_shape)
     segment_shape.elasticity = 0.8
     segment_shape.friction = 1.0
-    
-    #for space.
+
+    for i in range(a):
+        segment_shape = pymunk.Segment(space.static_body,
+                                       (WIDTH / layers * i, HEIGHT * 0.9),
+                                       (WIDTH / layers * i, HEIGHT), 26)
+        space.add(segment_shape)
+        segment_shape.elasticity = 0.8
+        segment_shape.friction = 1.0
 
 
 def main():
@@ -49,11 +66,8 @@ def main():
     pymunk.pygame_util.positive_y_is_up = False
     space.gravity = 0, 1000
 
-    a = 100
-    layers = 5
-
     gen_dividers(space)
-    gen_obstacles(space, a, layers)
+    gen_obstacles(space)
     gen_balls(10, space)
 
     while True:
